@@ -82,6 +82,10 @@ wrote reports\generated\batch-summary.md
 
 ## Repository Map
 
+This repo is the validation and handoff layer in the public geospatial stack. It
+can be used before the Data Gateway loads a source, before GeoServer publishes a
+layer, or before the Status Board depends on customer-provided data.
+
 - `src/spatial_validator/validators.py` - GeoJSON, CSV, GeoPackage, Shapefile, and GeoTIFF validation logic.
 - `src/spatial_validator/reports.py` - Markdown, JSON, and HTML report generation.
 - `samples/valid` - Datasets expected to pass readiness checks.
@@ -92,6 +96,14 @@ wrote reports\generated\batch-summary.md
 - `docs/postgis-load-plan.md` - PostGIS validation gate and loading workflow.
 - `docker-compose.yml` - Optional local PostGIS service for future load testing.
 - `.github/workflows/validate.yml` - Continuous validation for tests and passing sample data.
+
+Companion repos:
+
+- [Portfolio site](https://josephdillard.github.io/JosephDillard/)
+- [Geospatial ETL Validation Toolkit repo](https://github.com/JosephDillard/geospatial-etl-validation-toolkit)
+- [Geospatial Data Gateway](https://github.com/JosephDillard/geospatial-data-gateway)
+- [Geospatial Status Board](https://github.com/JosephDillard/geospatial-status-board)
+- [GeoAI Asset Detection Platform](https://github.com/JosephDillard/geoai-asset-detection-platform)
 
 ## Checks Included
 
@@ -119,4 +131,8 @@ That makes it useful as a standalone portfolio project and as a future validatio
 
 ## Roadmap
 
-- Add GitHub Actions validation for all sample datasets.
+- Add a gateway handoff manifest that can be consumed directly by
+  `geospatial-data-gateway`.
+- Add optional GeoServer publish-readiness checks after PostGIS load planning.
+- Add richer customer handoff templates with remediation notes by data owner,
+  source system, and target layer.
