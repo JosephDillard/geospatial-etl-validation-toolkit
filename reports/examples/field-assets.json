@@ -1,0 +1,59 @@
+{
+  "dataset_name": "field_assets",
+  "path": "samples\\valid\\field_assets.geojson",
+  "driver": "GeoJSON",
+  "status": "pass",
+  "readiness_score": 100,
+  "feature_count": 3,
+  "fields": [
+    "asset_id",
+    "asset_type",
+    "owner",
+    "status"
+  ],
+  "geometry_types": {
+    "Point": 3
+  },
+  "bbox": [
+    -96.4621,
+    32.9312,
+    -96.4553,
+    32.9351
+  ],
+  "null_counts": {},
+  "checks": [
+    {
+      "check_id": "schema.fields_present",
+      "severity": "info",
+      "message": "Attribute fields were detected.",
+      "details": {
+        "field_count": 4
+      }
+    },
+    {
+      "check_id": "schema.null_values",
+      "severity": "info",
+      "message": "No null or blank attribute values were found.",
+      "details": {}
+    },
+    {
+      "check_id": "spatial.bbox",
+      "severity": "info",
+      "message": "Dataset bounds were calculated.",
+      "details": {
+        "bbox": [
+          -96.4621,
+          32.9312,
+          -96.4553,
+          32.9351
+        ]
+      }
+    },
+    {
+      "check_id": "geometry.basic_validity",
+      "severity": "info",
+      "message": "All geometries passed starter coordinate validation.",
+      "details": {}
+    }
+  ]
+}

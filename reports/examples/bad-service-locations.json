@@ -1,0 +1,90 @@
+{
+  "dataset_name": "bad_service_locations",
+  "path": "samples\\invalid\\bad_service_locations.csv",
+  "driver": "CSV",
+  "status": "fail",
+  "readiness_score": 42,
+  "feature_count": 3,
+  "fields": [
+    "asset_id",
+    "asset_type",
+    "status",
+    "longitude",
+    "latitude",
+    "priority"
+  ],
+  "geometry_types": {
+    "Point": 3
+  },
+  "bbox": [
+    -96.4612,
+    32.9329,
+    -96.4612,
+    32.9329
+  ],
+  "null_counts": {
+    "priority": 1,
+    "status": 1
+  },
+  "checks": [
+    {
+      "check_id": "csv.coordinates.numeric",
+      "severity": "error",
+      "message": "Coordinate values must be numeric.",
+      "details": {
+        "row": 3,
+        "lon": "not-a-number",
+        "lat": "32.9344"
+      }
+    },
+    {
+      "check_id": "csv.coordinates.range",
+      "severity": "error",
+      "message": "Coordinate values fall outside valid WGS84 longitude/latitude ranges.",
+      "details": {
+        "row": 4,
+        "lon": -96.4526,
+        "lat": 95.0
+      }
+    },
+    {
+      "check_id": "schema.fields_present",
+      "severity": "info",
+      "message": "Attribute fields were detected.",
+      "details": {
+        "field_count": 6
+      }
+    },
+    {
+      "check_id": "schema.null_values",
+      "severity": "warning",
+      "message": "One or more fields contain null or blank values.",
+      "details": {
+        "priority": 1,
+        "status": 1
+      }
+    },
+    {
+      "check_id": "spatial.bbox",
+      "severity": "info",
+      "message": "Dataset bounds were calculated.",
+      "details": {
+        "bbox": [
+          -96.4612,
+          32.9329,
+          -96.4612,
+          32.9329
+        ]
+      }
+    },
+    {
+      "check_id": "csv.coordinates.detected",
+      "severity": "info",
+      "message": "Latitude and longitude columns were detected.",
+      "details": {
+        "longitude": "longitude",
+        "latitude": "latitude"
+      }
+    }
+  ]
+}

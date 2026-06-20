@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "asset_id": "BAD-1",
+        "asset_type": "transformer",
+        "status": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-196.4597, 32.9312]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "asset_id": "BAD-2",
+        "asset_type": "switch",
+        "status": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-96.46, 32.93],
+            [-96.45, 32.93],
+            [-96.45, 32.94]
+          ]
+        ]
+      }
+    }
+  ]
+}

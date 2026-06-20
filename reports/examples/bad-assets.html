@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Readiness Report: bad_assets</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #17211f; margin: 2rem; line-height: 1.55; }
+      main { max-width: 960px; margin: 0 auto; }
+      .summary { border: 1px solid #d7e0dd; border-left: 6px solid #2f7d64; padding: 1rem; }
+      table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+      th, td { border: 1px solid #d7e0dd; padding: 0.55rem; text-align: left; vertical-align: top; }
+      th { background: #f4f8f7; }
+      code { background: #f4f8f7; padding: 0.1rem 0.25rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Data Readiness Report: bad_assets</h1>
+      <section class="summary">
+        <p><strong>Status:</strong> FAIL</p>
+        <p><strong>Readiness Score:</strong> 42/100</p>
+        <p><strong>Driver:</strong> GeoJSON</p>
+        <p><strong>Feature Count:</strong> 2</p>
+        <p><strong>Bounds:</strong> (-196.4597, 32.93, -96.45, 32.94)</p>
+      </section>
+      <h2>Geometry Types</h2>
+      <ul><li>Point: 1</li>
+<li>Polygon: 1</li></ul>
+      <h2>Fields</h2>
+      <ul><li><code>asset_id</code> - null/blank values: 0</li>
+<li><code>asset_type</code> - null/blank values: 0</li>
+<li><code>status</code> - null/blank values: 2</li></ul>
+      <h2>Checks</h2>
+      <table>
+        <thead><tr><th>Severity</th><th>Check</th><th>Message</th></tr></thead>
+        <tbody><tr><td>ERROR</td><td>geometry.invalid</td><td>Feature geometry failed basic coordinate validation.</td></tr>
+<tr><td>ERROR</td><td>geometry.invalid</td><td>Feature geometry failed basic coordinate validation.</td></tr>
+<tr><td>INFO</td><td>schema.fields_present</td><td>Attribute fields were detected.</td></tr>
+<tr><td>WARNING</td><td>schema.null_values</td><td>One or more fields contain null or blank values.</td></tr>
+<tr><td>INFO</td><td>spatial.bbox</td><td>Dataset bounds were calculated.</td></tr></tbody>
+      </table>
+    </main>
+  </body>
+</html>

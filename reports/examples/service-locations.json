@@ -1,0 +1,64 @@
+{
+  "dataset_name": "service_locations",
+  "path": "samples\\valid\\service_locations.csv",
+  "driver": "CSV",
+  "status": "pass",
+  "readiness_score": 100,
+  "feature_count": 3,
+  "fields": [
+    "asset_id",
+    "asset_type",
+    "status",
+    "longitude",
+    "latitude",
+    "priority"
+  ],
+  "geometry_types": {
+    "Point": 3
+  },
+  "bbox": [
+    -96.4612,
+    32.9329,
+    -96.4526,
+    32.9361
+  ],
+  "null_counts": {},
+  "checks": [
+    {
+      "check_id": "schema.fields_present",
+      "severity": "info",
+      "message": "Attribute fields were detected.",
+      "details": {
+        "field_count": 6
+      }
+    },
+    {
+      "check_id": "schema.null_values",
+      "severity": "info",
+      "message": "No null or blank attribute values were found.",
+      "details": {}
+    },
+    {
+      "check_id": "spatial.bbox",
+      "severity": "info",
+      "message": "Dataset bounds were calculated.",
+      "details": {
+        "bbox": [
+          -96.4612,
+          32.9329,
+          -96.4526,
+          32.9361
+        ]
+      }
+    },
+    {
+      "check_id": "csv.coordinates.detected",
+      "severity": "info",
+      "message": "Latitude and longitude columns were detected.",
+      "details": {
+        "longitude": "longitude",
+        "latitude": "latitude"
+      }
+    }
+  ]
+}

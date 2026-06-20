@@ -1,0 +1,79 @@
+{
+  "dataset_name": "bad_assets",
+  "path": "samples\\invalid\\bad_assets.geojson",
+  "driver": "GeoJSON",
+  "status": "fail",
+  "readiness_score": 42,
+  "feature_count": 2,
+  "fields": [
+    "asset_id",
+    "asset_type",
+    "status"
+  ],
+  "geometry_types": {
+    "Point": 1,
+    "Polygon": 1
+  },
+  "bbox": [
+    -196.4597,
+    32.93,
+    -96.45,
+    32.94
+  ],
+  "null_counts": {
+    "status": 2
+  },
+  "checks": [
+    {
+      "check_id": "geometry.invalid",
+      "severity": "error",
+      "message": "Feature geometry failed basic coordinate validation.",
+      "details": {
+        "index": 0,
+        "errors": [
+          "One or more coordinates fall outside WGS84 longitude/latitude ranges."
+        ]
+      }
+    },
+    {
+      "check_id": "geometry.invalid",
+      "severity": "error",
+      "message": "Feature geometry failed basic coordinate validation.",
+      "details": {
+        "index": 1,
+        "errors": [
+          "Polygon ring 0 must contain at least four positions."
+        ]
+      }
+    },
+    {
+      "check_id": "schema.fields_present",
+      "severity": "info",
+      "message": "Attribute fields were detected.",
+      "details": {
+        "field_count": 3
+      }
+    },
+    {
+      "check_id": "schema.null_values",
+      "severity": "warning",
+      "message": "One or more fields contain null or blank values.",
+      "details": {
+        "status": 2
+      }
+    },
+    {
+      "check_id": "spatial.bbox",
+      "severity": "info",
+      "message": "Dataset bounds were calculated.",
+      "details": {
+        "bbox": [
+          -196.4597,
+          32.93,
+          -96.45,
+          32.94
+        ]
+      }
+    }
+  ]
+}

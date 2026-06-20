@@ -1,0 +1,4 @@
+asset_id,asset_type,status,longitude,latitude,priority
+TX-2001,valve,active,-96.4612,32.9329,normal
+TX-2002,pump,maintenance,-96.4578,32.9344,high
+TX-2003,cabinet,active,-96.4526,32.9361,normal
