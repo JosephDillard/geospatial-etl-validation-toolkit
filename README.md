@@ -11,6 +11,7 @@ The goal is to show practical GIS architecture judgment: data quality, ETL safet
 - Validates GeoPackage and Shapefile vector datasets through GeoPandas/Pyogrio.
 - Inspects GeoTIFF raster metadata for Cloud Optimized GeoTIFF readiness signals.
 - Applies configurable required-field and domain checks from JSON or YAML rule files.
+- Loads passing vector datasets to PostGIS through an explicit validation gate.
 - Reports feature counts, fields, geometry types, bounding boxes, null or blank values, and validation checks.
 - Generates Markdown, JSON, and HTML data-readiness reports.
 - Includes valid and invalid sample datasets for quick review.
@@ -54,8 +55,18 @@ python -m unittest discover -s tests
 Install as an editable package:
 
 ```powershell
-python -m pip install -e .
+python -m pip install -e ".[geo,postgis]"
 spatial-validator validate samples\valid --report-dir reports\generated
+```
+
+Dry-run a PostGIS load plan after validation passes:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m spatial_validator load-postgis samples\valid\field_assets.geojson `
+  --connection "postgresql+psycopg://spatial_validator:spatial_validator@localhost:5434/spatial_validator" `
+  --table staging.field_assets `
+  --dry-run
 ```
 
 ## Example Output
@@ -77,7 +88,7 @@ wrote reports\generated\field-assets.html
 - `samples/validation-rules.json` - Example required-field and domain rules.
 - `reports/examples` - Committed example reports for reviewers.
 - `docs/architecture.md` - Architecture notes and expansion path.
-- `docs/postgis-load-plan.md` - Planned PostGIS loading workflow.
+- `docs/postgis-load-plan.md` - PostGIS validation gate and loading workflow.
 - `docker-compose.yml` - Optional local PostGIS service for future load testing.
 - `.github/workflows/validate.yml` - Continuous validation for tests and passing sample data.
 
@@ -90,6 +101,7 @@ wrote reports\generated\field-assets.html
 | Geometry | Type counts, coordinate validation, GeoPandas geometry validity checks |
 | Spatial | Bounding box calculation, CRS detection |
 | Raster | Driver, dimensions, CRS, tiling, overviews, compression, block shapes |
+| Loading | PostGIS dry-run planning, validation gate, target SRID, if-exists behavior |
 | Reporting | Status, readiness score, check details, ETL notes |
 
 ## Fit With The Larger Geospatial Stack
@@ -106,6 +118,5 @@ That makes it useful as a standalone portfolio project and as a future validatio
 
 ## Roadmap
 
-- Add PostGIS staging-table load execution.
 - Add batch summary reports for data handoffs.
 - Add GitHub Actions validation for all sample datasets.
