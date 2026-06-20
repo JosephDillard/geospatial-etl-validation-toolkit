@@ -9,3 +9,5 @@ build/
 *.egg-info/
 reports/generated/
 .env
+server.out.log
+server.err.log

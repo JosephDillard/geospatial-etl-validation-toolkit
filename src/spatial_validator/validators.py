@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
@@ -9,7 +10,7 @@ from typing import Any, Iterable
 from spatial_validator.models import DatasetReport
 
 
-SUPPORTED_SUFFIXES = {".geojson", ".json", ".csv"}
+SUPPORTED_SUFFIXES = {".geojson", ".json", ".csv", ".gpkg", ".shp"}
 LON_NAMES = {"lon", "lng", "long", "longitude", "x"}
 LAT_NAMES = {"lat", "latitude", "y"}
 
@@ -34,12 +35,14 @@ def validate_dataset(path: Path) -> DatasetReport:
         return validate_geojson(path)
     if suffix == ".csv":
         return validate_csv(path)
+    if suffix in {".gpkg", ".shp"}:
+        return validate_vector_file(path)
 
     report = DatasetReport(path, path.stem, "unsupported")
     report.add_check(
         "input.unsupported_format",
         "error",
-        "Unsupported file type. Supported starter formats are GeoJSON, JSON, and CSV.",
+        "Unsupported file type. Supported formats are GeoJSON, JSON, CSV, GeoPackage, and Shapefile.",
         {"suffix": suffix},
     )
     return report
@@ -205,6 +208,75 @@ def validate_csv(path: Path) -> DatasetReport:
     return report
 
 
+def validate_vector_file(path: Path) -> DatasetReport:
+    driver = "GeoPackage" if path.suffix.lower() == ".gpkg" else "ESRI Shapefile"
+    report = DatasetReport(path=path, dataset_name=path.stem, driver=driver)
+
+    try:
+        import geopandas as gpd
+    except ImportError:
+        report.add_check(
+            "dependency.geopandas_missing",
+            "error",
+            "GeoPackage and Shapefile validation requires the optional GeoPandas dependency.",
+        )
+        return report
+
+    if path.suffix.lower() == ".gpkg":
+        try:
+            import pyogrio
+
+            layers = pyogrio.list_layers(path)
+            report.metadata["layers"] = [
+                {"name": str(layer[0]), "geometry_type": str(layer[1])}
+                for layer in layers
+            ]
+            report.metadata["layer_count"] = len(layers)
+        except ImportError:
+            report.add_check(
+                "dependency.pyogrio_missing",
+                "warning",
+                "Pyogrio is not installed, so GeoPackage layer inventory was skipped.",
+            )
+        except Exception as exc:
+            report.add_check(
+                "vector.layers",
+                "warning",
+                "GeoPackage layer inventory could not be read.",
+                {"error": str(exc)},
+            )
+
+    try:
+        gdf = gpd.read_file(path)
+    except Exception as exc:
+        report.add_check("vector.read", "error", "Vector dataset could not be read.", {"error": str(exc)})
+        return report
+
+    report.feature_count = int(len(gdf))
+    geometry_column = getattr(gdf, "geometry", None)
+    geometry_name = getattr(geometry_column, "name", None) if geometry_column is not None else None
+    report.metadata["geometry_column"] = str(geometry_name) if geometry_name else None
+    report.fields = [str(column) for column in gdf.columns if str(column) != str(geometry_name)]
+    report.crs = str(gdf.crs) if gdf.crs else None
+
+    if report.feature_count == 0:
+        report.add_check("dataset.empty", "error", "Dataset contains zero features.")
+
+    report.null_counts = count_dataframe_nulls(gdf, report.fields)
+    report.geometry_types = count_geometry_types(gdf)
+    report.bbox = dataframe_bounds(gdf)
+
+    if report.crs:
+        report.add_check("spatial.crs", "info", "Dataset CRS was detected.", {"crs": report.crs})
+    else:
+        report.add_check("spatial.crs_missing", "warning", "Dataset CRS was not detected.")
+
+    add_vector_geometry_checks(report, gdf)
+    add_common_checks(report)
+
+    return report
+
+
 def detect_coordinate_fields(fieldnames: Iterable[str]) -> tuple[str | None, str | None]:
     lowered = {field.lower().strip(): field for field in fieldnames}
     lon = next((lowered[name] for name in LON_NAMES if name in lowered), None)
@@ -292,6 +364,74 @@ def calculate_bbox(coordinates: list[tuple[float, float]]) -> tuple[float, float
     lon_values = [point[0] for point in coordinates]
     lat_values = [point[1] for point in coordinates]
     return min(lon_values), min(lat_values), max(lon_values), max(lat_values)
+
+
+def count_dataframe_nulls(gdf: Any, fields: list[str]) -> dict[str, int]:
+    null_counts: dict[str, int] = {}
+    for field in fields:
+        series = gdf[field]
+        null_count = int(series.isna().sum())
+        blank_count = int(series.map(lambda value: isinstance(value, str) and value.strip() == "").sum())
+        total = null_count + blank_count
+        if total:
+            null_counts[field] = total
+    return dict(sorted(null_counts.items()))
+
+
+def count_geometry_types(gdf: Any) -> dict[str, int]:
+    if gdf.empty or gdf.geometry is None:
+        return {}
+    values = gdf.geometry.geom_type.fillna("None").value_counts(dropna=False)
+    return {str(geometry_type): int(count) for geometry_type, count in sorted(values.items())}
+
+
+def dataframe_bounds(gdf: Any) -> tuple[float, float, float, float] | None:
+    if gdf.empty:
+        return None
+    try:
+        bounds = [float(value) for value in gdf.total_bounds]
+    except Exception:
+        return None
+    if len(bounds) != 4 or any(math.isnan(value) for value in bounds):
+        return None
+    return bounds[0], bounds[1], bounds[2], bounds[3]
+
+
+def add_vector_geometry_checks(report: DatasetReport, gdf: Any) -> None:
+    if gdf.empty:
+        return
+
+    geometry = gdf.geometry
+    missing_count = int(geometry.isna().sum())
+    if missing_count:
+        report.add_check(
+            "geometry.missing",
+            "error",
+            "One or more features have missing geometry.",
+            {"missing_count": missing_count},
+        )
+
+    not_null_geometry = geometry[geometry.notna()]
+    empty_count = int(not_null_geometry.is_empty.sum()) if len(not_null_geometry) else 0
+    if empty_count:
+        report.add_check(
+            "geometry.empty",
+            "error",
+            "One or more features have empty geometry.",
+            {"empty_count": empty_count},
+        )
+
+    invalid_count = int((not_null_geometry.is_valid == False).sum()) if len(not_null_geometry) else 0
+    if invalid_count:
+        report.add_check(
+            "geometry.invalid",
+            "error",
+            "One or more features have invalid geometry.",
+            {"invalid_count": invalid_count},
+        )
+
+    if missing_count == 0 and empty_count == 0 and invalid_count == 0:
+        report.add_check("geometry.vector_validity", "info", "All vector geometries passed GeoPandas validity checks.")
 
 
 def add_common_checks(report: DatasetReport) -> None:

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date, datetime
+from decimal import Decimal
+from enum import Enum
+from numbers import Number
 from pathlib import Path
 from typing import Any
 
@@ -37,7 +41,9 @@ class DatasetReport:
     fields: list[str] = field(default_factory=list)
     geometry_types: dict[str, int] = field(default_factory=dict)
     bbox: tuple[float, float, float, float] | None = None
+    crs: str | None = None
     null_counts: dict[str, int] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     checks: list[CheckResult] = field(default_factory=list)
 
     @property
@@ -53,6 +59,14 @@ class DatasetReport:
     def readiness_score(self) -> int:
         penalty = sum(SEVERITY_WEIGHT.get(check.severity, 0) for check in self.checks)
         return max(0, 100 - penalty)
+
+    @property
+    def has_errors(self) -> bool:
+        return any(check.severity == "error" for check in self.checks)
+
+    @property
+    def has_warnings(self) -> bool:
+        return any(check.severity == "warning" for check in self.checks)
 
     def add_check(
         self,
@@ -81,6 +95,31 @@ class DatasetReport:
             "fields": self.fields,
             "geometry_types": self.geometry_types,
             "bbox": self.bbox,
+            "crs": self.crs,
             "null_counts": self.null_counts,
+            "metadata": self.metadata,
             "checks": [check.to_dict() for check in self.checks],
         }
+        return json_safe(payload)
+
+
+def json_safe(value: Any) -> Any:
+    if value is None or isinstance(value, str | bool):
+        return value
+    if isinstance(value, int | float):
+        return value
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, Number):
+        return value.item() if hasattr(value, "item") else value
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, datetime | date):
+        return value.isoformat()
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, tuple | list | set):
+        return [json_safe(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    return str(value)

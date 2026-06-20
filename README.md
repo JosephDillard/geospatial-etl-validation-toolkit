@@ -8,6 +8,7 @@ The goal is to show practical GIS architecture judgment: data quality, ETL safet
 
 - Validates GeoJSON FeatureCollections.
 - Validates CSV files with latitude and longitude columns.
+- Validates GeoPackage and Shapefile vector datasets through GeoPandas/Pyogrio.
 - Reports feature counts, fields, geometry types, bounding boxes, null or blank values, and validation checks.
 - Generates Markdown, JSON, and HTML data-readiness reports.
 - Includes valid and invalid sample datasets for quick review.
@@ -60,7 +61,7 @@ wrote reports\generated\field-assets.html
 
 ## Repository Map
 
-- `src/spatial_validator/validators.py` - GeoJSON and CSV validation logic.
+- `src/spatial_validator/validators.py` - GeoJSON, CSV, GeoPackage, and Shapefile validation logic.
 - `src/spatial_validator/reports.py` - Markdown, JSON, and HTML report generation.
 - `samples/valid` - Datasets expected to pass readiness checks.
 - `samples/invalid` - Datasets expected to fail or warn.
@@ -76,8 +77,8 @@ wrote reports\generated\field-assets.html
 |---|---|
 | Input | Supported format, parse errors, empty dataset |
 | Schema | Field discovery, null or blank value counts |
-| Geometry | Type counts, basic coordinate validation, coordinate range checks |
-| Spatial | Bounding box calculation |
+| Geometry | Type counts, coordinate validation, GeoPandas geometry validity checks |
+| Spatial | Bounding box calculation, CRS detection |
 | Reporting | Status, readiness score, check details, ETL notes |
 
 ## Fit With The Larger Geospatial Stack
@@ -94,7 +95,6 @@ That makes it useful as a standalone portfolio project and as a future validatio
 
 ## Roadmap
 
-- Add GeoPackage and Shapefile support through optional GeoPandas/Pyogrio dependencies.
 - Add configurable required fields, domains, and customer-specific schema rules.
 - Add raster metadata validation for COG-oriented workflows.
 - Add PostGIS staging-table load execution.
