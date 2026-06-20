@@ -4,7 +4,7 @@ import html
 import json
 from pathlib import Path
 
-from spatial_validator.models import DatasetReport
+from spatial_validator.models import DatasetReport, json_safe
 
 
 def write_reports(
@@ -43,6 +43,7 @@ def render_markdown(report: DatasetReport) -> str:
         f"- Readiness Score: **{report.readiness_score}/100**",
         f"- Driver: {report.driver}",
         f"- Feature Count: {report.feature_count}",
+        f"- CRS: {report.crs if report.crs else 'Not available'}",
         f"- Bounds: {report.bbox if report.bbox else 'Not available'}",
         "",
         "## Geometry Types",
@@ -62,6 +63,11 @@ def render_markdown(report: DatasetReport) -> str:
             lines.append(f"- `{field}` - null/blank values: {null_count}")
     else:
         lines.append("- None detected")
+
+    if report.metadata:
+        lines.extend(["", "## Metadata", ""])
+        for key, value in sorted(report.metadata.items()):
+            lines.append(f"- `{key}`: `{json.dumps(json_safe(value), sort_keys=True)}`")
 
     lines.extend(["", "## Checks", ""])
     for check in report.checks:
@@ -94,6 +100,10 @@ def render_html(report: DatasetReport) -> str:
     geometry_items = "\n".join(
         f"<li>{html.escape(geometry_type)}: {count}</li>" for geometry_type, count in report.geometry_types.items()
     ) or "<li>None detected</li>"
+    metadata_rows = "\n".join(
+        f"<tr><td>{html.escape(str(key))}</td><td><code>{html.escape(json.dumps(json_safe(value), sort_keys=True))}</code></td></tr>"
+        for key, value in sorted(report.metadata.items())
+    ) or "<tr><td colspan=\"2\">None available</td></tr>"
 
     return f"""<!doctype html>
 <html lang="en">
@@ -119,12 +129,18 @@ def render_html(report: DatasetReport) -> str:
         <p><strong>Readiness Score:</strong> {report.readiness_score}/100</p>
         <p><strong>Driver:</strong> {html.escape(report.driver)}</p>
         <p><strong>Feature Count:</strong> {report.feature_count}</p>
+        <p><strong>CRS:</strong> {html.escape(str(report.crs if report.crs else "Not available"))}</p>
         <p><strong>Bounds:</strong> {html.escape(str(report.bbox if report.bbox else "Not available"))}</p>
       </section>
       <h2>Geometry Types</h2>
       <ul>{geometry_items}</ul>
       <h2>Fields</h2>
       <ul>{field_items}</ul>
+      <h2>Metadata</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Value</th></tr></thead>
+        <tbody>{metadata_rows}</tbody>
+      </table>
       <h2>Checks</h2>
       <table>
         <thead><tr><th>Severity</th><th>Check</th><th>Message</th></tr></thead>

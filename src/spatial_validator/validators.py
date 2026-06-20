@@ -10,7 +10,7 @@ from typing import Any, Iterable
 from spatial_validator.models import DatasetReport
 
 
-SUPPORTED_SUFFIXES = {".geojson", ".json", ".csv", ".gpkg", ".shp"}
+SUPPORTED_SUFFIXES = {".geojson", ".json", ".csv", ".gpkg", ".shp", ".tif", ".tiff"}
 LON_NAMES = {"lon", "lng", "long", "longitude", "x"}
 LAT_NAMES = {"lat", "latitude", "y"}
 
@@ -37,12 +37,14 @@ def validate_dataset(path: Path) -> DatasetReport:
         return validate_csv(path)
     if suffix in {".gpkg", ".shp"}:
         return validate_vector_file(path)
+    if suffix in {".tif", ".tiff"}:
+        return validate_raster(path)
 
     report = DatasetReport(path, path.stem, "unsupported")
     report.add_check(
         "input.unsupported_format",
         "error",
-        "Unsupported file type. Supported formats are GeoJSON, JSON, CSV, GeoPackage, and Shapefile.",
+        "Unsupported file type. Supported formats are GeoJSON, JSON, CSV, GeoPackage, Shapefile, and GeoTIFF.",
         {"suffix": suffix},
     )
     return report
@@ -273,6 +275,120 @@ def validate_vector_file(path: Path) -> DatasetReport:
 
     add_vector_geometry_checks(report, gdf)
     add_common_checks(report)
+
+    return report
+
+
+def validate_raster(path: Path) -> DatasetReport:
+    report = DatasetReport(path=path, dataset_name=path.stem, driver="GeoTIFF")
+
+    try:
+        import rasterio
+    except ImportError:
+        report.add_check(
+            "dependency.rasterio_missing",
+            "error",
+            "Raster metadata inspection requires the optional Rasterio dependency.",
+        )
+        return report
+
+    try:
+        with rasterio.open(path) as source:
+            report.driver = str(source.driver)
+            report.feature_count = 1
+            report.geometry_types = {"Raster": 1}
+            report.crs = str(source.crs) if source.crs else None
+            report.bbox = (
+                float(source.bounds.left),
+                float(source.bounds.bottom),
+                float(source.bounds.right),
+                float(source.bounds.top),
+            )
+            compression = source.compression.value if source.compression else None
+            overviews = {str(index): source.overviews(index) for index in source.indexes}
+            report.metadata.update(
+                {
+                    "width": int(source.width),
+                    "height": int(source.height),
+                    "band_count": int(source.count),
+                    "dtypes": list(source.dtypes),
+                    "driver": str(source.driver),
+                    "is_tiled": bool(source.is_tiled),
+                    "block_shapes": [list(shape) for shape in source.block_shapes],
+                    "compression": compression,
+                    "overviews": overviews,
+                    "nodata": source.nodata,
+                    "interleave": source.profile.get("interleave"),
+                }
+            )
+    except Exception as exc:
+        report.add_check("raster.read", "error", "Raster dataset could not be read.", {"error": str(exc)})
+        return report
+
+    if report.driver == "GTiff":
+        report.add_check("raster.driver", "info", "Raster is stored as GeoTIFF.")
+    else:
+        report.add_check(
+            "raster.driver",
+            "warning",
+            "Raster is readable, but it is not stored as GeoTIFF.",
+            {"driver": report.driver},
+        )
+
+    if report.metadata.get("width", 0) > 0 and report.metadata.get("height", 0) > 0:
+        report.add_check(
+            "raster.dimensions",
+            "info",
+            "Raster dimensions were read.",
+            {"width": report.metadata["width"], "height": report.metadata["height"]},
+        )
+    else:
+        report.add_check("raster.dimensions", "error", "Raster dimensions are invalid.")
+
+    if report.crs:
+        report.add_check("spatial.crs", "info", "Raster CRS was detected.", {"crs": report.crs})
+    else:
+        report.add_check("spatial.crs_missing", "warning", "Raster CRS was not detected.")
+
+    if report.metadata.get("is_tiled"):
+        report.add_check("cog.tiling", "info", "Raster uses internal tiling.")
+    else:
+        report.add_check(
+            "cog.tiling",
+            "warning",
+            "COG readiness issue: raster is not internally tiled.",
+        )
+
+    if any(report.metadata.get("overviews", {}).values()):
+        report.add_check("cog.overviews", "info", "Raster has internal overviews.")
+    else:
+        report.add_check(
+            "cog.overviews",
+            "warning",
+            "COG readiness issue: no internal overviews were detected.",
+        )
+
+    if report.metadata.get("compression"):
+        report.add_check(
+            "cog.compression",
+            "info",
+            "Raster compression was detected.",
+            {"compression": report.metadata["compression"]},
+        )
+    else:
+        report.add_check(
+            "cog.compression",
+            "warning",
+            "COG readiness issue: no compression was detected.",
+        )
+
+    if report.metadata.get("block_shapes"):
+        report.add_check(
+            "raster.block_shapes",
+            "info",
+            "Raster block shapes were read.",
+            {"block_shapes": report.metadata["block_shapes"]},
+        )
 
     return report
 
