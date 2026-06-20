@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from spatial_validator.config import load_validation_config
 from spatial_validator.reports import write_reports
 from spatial_validator.validators import validate_path
 
@@ -26,6 +27,10 @@ def build_parser() -> argparse.ArgumentParser:
         default="markdown,json,html",
         help="Comma-separated output formats: markdown,json,html.",
     )
+    validate.add_argument(
+        "--config",
+        help="Optional JSON/YAML validation rules for required fields and domains.",
+    )
     return parser
 
 
@@ -34,7 +39,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "validate":
-        reports = validate_path(Path(args.path))
+        config = load_validation_config(args.config)
+        reports = validate_path(Path(args.path), config)
         formats = [item.strip().lower() for item in args.formats.split(",") if item.strip()]
         written = write_reports(reports, args.report_dir, formats)
 

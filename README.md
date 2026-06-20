@@ -10,6 +10,7 @@ The goal is to show practical GIS architecture judgment: data quality, ETL safet
 - Validates CSV files with latitude and longitude columns.
 - Validates GeoPackage and Shapefile vector datasets through GeoPandas/Pyogrio.
 - Inspects GeoTIFF raster metadata for Cloud Optimized GeoTIFF readiness signals.
+- Applies configurable required-field and domain checks from JSON or YAML rule files.
 - Reports feature counts, fields, geometry types, bounding boxes, null or blank values, and validation checks.
 - Generates Markdown, JSON, and HTML data-readiness reports.
 - Includes valid and invalid sample datasets for quick review.
@@ -34,6 +35,13 @@ Validate the intentionally bad samples:
 ```powershell
 $env:PYTHONPATH = "src"
 python -m spatial_validator validate samples\invalid --report-dir reports\generated
+```
+
+Validate with customer-specific field and domain rules:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m spatial_validator validate samples\valid --config samples\validation-rules.json --report-dir reports\generated
 ```
 
 Run tests:
@@ -66,6 +74,7 @@ wrote reports\generated\field-assets.html
 - `src/spatial_validator/reports.py` - Markdown, JSON, and HTML report generation.
 - `samples/valid` - Datasets expected to pass readiness checks.
 - `samples/invalid` - Datasets expected to fail or warn.
+- `samples/validation-rules.json` - Example required-field and domain rules.
 - `reports/examples` - Committed example reports for reviewers.
 - `docs/architecture.md` - Architecture notes and expansion path.
 - `docs/postgis-load-plan.md` - Planned PostGIS loading workflow.
@@ -77,7 +86,7 @@ wrote reports\generated\field-assets.html
 | Area | Starter checks |
 |---|---|
 | Input | Supported format, parse errors, empty dataset |
-| Schema | Field discovery, null or blank value counts |
+| Schema | Field discovery, null or blank value counts, required fields, domain values |
 | Geometry | Type counts, coordinate validation, GeoPandas geometry validity checks |
 | Spatial | Bounding box calculation, CRS detection |
 | Raster | Driver, dimensions, CRS, tiling, overviews, compression, block shapes |
@@ -97,7 +106,6 @@ That makes it useful as a standalone portfolio project and as a future validatio
 
 ## Roadmap
 
-- Add configurable required fields, domains, and customer-specific schema rules.
 - Add PostGIS staging-table load execution.
 - Add batch summary reports for data handoffs.
 - Add GitHub Actions validation for all sample datasets.

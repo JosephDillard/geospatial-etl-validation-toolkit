@@ -1,0 +1,22 @@
+{
+  "required_fields": [
+    "asset_id",
+    "asset_type",
+    "status"
+  ],
+  "domains": {
+    "asset_type": [
+      "cabinet",
+      "meter",
+      "pump",
+      "switch",
+      "transformer",
+      "valve"
+    ],
+    "status": [
+      "active",
+      "inspection_due",
+      "maintenance"
+    ]
+  }
+}

@@ -7,6 +7,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
+from spatial_validator.config import ValidationConfig, apply_attribute_rules
 from spatial_validator.models import DatasetReport
 
 
@@ -15,7 +16,7 @@ LON_NAMES = {"lon", "lng", "long", "longitude", "x"}
 LAT_NAMES = {"lat", "latitude", "y"}
 
 
-def validate_path(path: str | Path) -> list[DatasetReport]:
+def validate_path(path: str | Path, config: ValidationConfig | None = None) -> list[DatasetReport]:
     target = Path(path)
     if target.is_dir():
         files = sorted(
@@ -25,18 +26,18 @@ def validate_path(path: str | Path) -> list[DatasetReport]:
             report = DatasetReport(target, target.name, "directory")
             report.add_check("input.no_supported_files", "error", "No supported GeoJSON, JSON, or CSV files were found.")
             return [report]
-        return [validate_dataset(file_path) for file_path in files]
-    return [validate_dataset(target)]
+        return [validate_dataset(file_path, config) for file_path in files]
+    return [validate_dataset(target, config)]
 
 
-def validate_dataset(path: Path) -> DatasetReport:
+def validate_dataset(path: Path, config: ValidationConfig | None = None) -> DatasetReport:
     suffix = path.suffix.lower()
     if suffix in {".geojson", ".json"}:
-        return validate_geojson(path)
+        return validate_geojson(path, config)
     if suffix == ".csv":
-        return validate_csv(path)
+        return validate_csv(path, config)
     if suffix in {".gpkg", ".shp"}:
-        return validate_vector_file(path)
+        return validate_vector_file(path, config)
     if suffix in {".tif", ".tiff"}:
         return validate_raster(path)
 
@@ -50,7 +51,7 @@ def validate_dataset(path: Path) -> DatasetReport:
     return report
 
 
-def validate_geojson(path: Path) -> DatasetReport:
+def validate_geojson(path: Path, config: ValidationConfig | None = None) -> DatasetReport:
     report = DatasetReport(path=path, dataset_name=path.stem, driver="GeoJSON")
 
     try:
@@ -81,6 +82,7 @@ def validate_geojson(path: Path) -> DatasetReport:
     geometry_counter: Counter[str] = Counter()
     null_counter: Counter[str] = Counter()
     coordinate_values: list[tuple[float, float]] = []
+    property_rows: list[dict[str, Any]] = []
     invalid_geometry_count = 0
 
     for index, feature in enumerate(features):
@@ -99,6 +101,7 @@ def validate_geojson(path: Path) -> DatasetReport:
             properties = {}
 
         field_names.update(properties.keys())
+        property_rows.append(properties)
         for key, value in properties.items():
             if value in (None, ""):
                 null_counter[key] += 1
@@ -123,13 +126,14 @@ def validate_geojson(path: Path) -> DatasetReport:
     report.bbox = calculate_bbox(coordinate_values)
 
     add_common_checks(report)
+    apply_attribute_rules(report, property_rows, config)
     if invalid_geometry_count == 0 and report.feature_count > 0:
         report.add_check("geometry.basic_validity", "info", "All geometries passed starter coordinate validation.")
 
     return report
 
 
-def validate_csv(path: Path) -> DatasetReport:
+def validate_csv(path: Path, config: ValidationConfig | None = None) -> DatasetReport:
     report = DatasetReport(path=path, dataset_name=path.stem, driver="CSV")
 
     try:
@@ -198,6 +202,7 @@ def validate_csv(path: Path) -> DatasetReport:
     report.null_counts = dict(sorted(null_counter.items()))
     report.bbox = calculate_bbox(coordinate_values)
     add_common_checks(report)
+    apply_attribute_rules(report, rows, config)
 
     if lon_field and lat_field and report.bbox:
         report.add_check(
@@ -210,7 +215,7 @@ def validate_csv(path: Path) -> DatasetReport:
     return report
 
 
-def validate_vector_file(path: Path) -> DatasetReport:
+def validate_vector_file(path: Path, config: ValidationConfig | None = None) -> DatasetReport:
     driver = "GeoPackage" if path.suffix.lower() == ".gpkg" else "ESRI Shapefile"
     report = DatasetReport(path=path, dataset_name=path.stem, driver=driver)
 
@@ -275,6 +280,7 @@ def validate_vector_file(path: Path) -> DatasetReport:
 
     add_vector_geometry_checks(report, gdf)
     add_common_checks(report)
+    apply_attribute_rules(report, dataframe_records(gdf, report.fields), config)
 
     return report
 
@@ -492,6 +498,22 @@ def count_dataframe_nulls(gdf: Any, fields: list[str]) -> dict[str, int]:
         if total:
             null_counts[field] = total
     return dict(sorted(null_counts.items()))
+
+
+def dataframe_records(gdf: Any, fields: list[str]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for record in gdf[fields].to_dict("records"):
+        rows.append({field: clean_cell_value(value) for field, value in record.items()})
+    return rows
+
+
+def clean_cell_value(value: Any) -> Any:
+    try:
+        if value != value:
+            return None
+    except TypeError:
+        pass
+    return value
 
 
 def count_geometry_types(gdf: Any) -> dict[str, int]:

@@ -6,6 +6,7 @@ This repo is meant to be reviewed quickly by hiring managers, GIS architects, an
 
 - `README.md` explains the business value and commands.
 - `samples/valid` and `samples/invalid` show the validation story.
+- `samples/validation-rules.json` shows configurable required-field and domain checks.
 - `src/spatial_validator/validators.py` contains the GeoJSON, CSV, GeoPackage, Shapefile, and GeoTIFF checks.
 - `src/spatial_validator/reports.py` generates Markdown, JSON, and HTML readiness reports.
 - `docs/architecture.md` explains how this grows into a production ETL validation layer.
@@ -13,6 +14,7 @@ This repo is meant to be reviewed quickly by hiring managers, GIS architects, an
 ## What The Project Demonstrates
 
 - Practical GIS data quality thinking.
+- Customer-specific schema governance through configurable rules.
 - Python automation for geospatial ETL.
 - Vector validation with GeoPandas/Pyogrio for reviewer-friendly GIS formats.
 - Raster metadata inspection for COG-oriented readiness conversations.
