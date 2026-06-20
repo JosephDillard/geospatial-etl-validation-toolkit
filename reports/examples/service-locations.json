@@ -22,7 +22,9 @@
     -96.4526,
     32.9361
   ],
+  "crs": null,
   "null_counts": {},
+  "metadata": {},
   "checks": [
     {
       "check_id": "schema.fields_present",
@@ -48,6 +50,20 @@
           32.9329,
           -96.4526,
           32.9361
+        ]
+      }
+    },
+    {
+      "check_id": "config.rules_applied",
+      "severity": "info",
+      "message": "Configured required-field and domain checks were applied.",
+      "details": {
+        "rules": [
+          "required:asset_id",
+          "required:asset_type",
+          "required:status",
+          "domain:asset_type",
+          "domain:status"
         ]
       }
     },

@@ -32,6 +32,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--config",
         help="Optional JSON/YAML validation rules for required fields and domains.",
     )
+    validate.add_argument(
+        "--no-batch-summary",
+        action="store_true",
+        help="Do not write batch-summary reports.",
+    )
 
     load = subparsers.add_parser("load-postgis", help="Validate and load one vector dataset into PostGIS.")
     load.add_argument("path", help="Path to a CSV, GeoJSON, GeoPackage, or Shapefile dataset.")
@@ -66,7 +71,12 @@ def main(argv: list[str] | None = None) -> int:
         config = load_validation_config(args.config)
         reports = validate_path(Path(args.path), config)
         formats = [item.strip().lower() for item in args.formats.split(",") if item.strip()]
-        written = write_reports(reports, args.report_dir, formats)
+        written = write_reports(
+            reports,
+            args.report_dir,
+            formats,
+            include_batch_summary=not args.no_batch_summary,
+        )
 
         for report in reports:
             print(

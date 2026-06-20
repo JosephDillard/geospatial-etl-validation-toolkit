@@ -13,7 +13,7 @@ The goal is to show practical GIS architecture judgment: data quality, ETL safet
 - Applies configurable required-field and domain checks from JSON or YAML rule files.
 - Loads passing vector datasets to PostGIS through an explicit validation gate.
 - Reports feature counts, fields, geometry types, bounding boxes, null or blank values, and validation checks.
-- Generates Markdown, JSON, and HTML data-readiness reports.
+- Generates Markdown, JSON, and HTML data-readiness reports plus batch handoff summaries.
 - Includes valid and invalid sample datasets for quick review.
 - Keeps PostGIS as an optional next step instead of requiring a database for the first run.
 - Includes a GitHub Actions workflow that runs unit tests and validates passing sample datasets.
@@ -77,6 +77,7 @@ service_locations: PASS (100/100, 3 features)
 wrote reports\generated\field-assets.md
 wrote reports\generated\field-assets.json
 wrote reports\generated\field-assets.html
+wrote reports\generated\batch-summary.md
 ```
 
 ## Repository Map
@@ -102,7 +103,7 @@ wrote reports\generated\field-assets.html
 | Spatial | Bounding box calculation, CRS detection |
 | Raster | Driver, dimensions, CRS, tiling, overviews, compression, block shapes |
 | Loading | PostGIS dry-run planning, validation gate, target SRID, if-exists behavior |
-| Reporting | Status, readiness score, check details, ETL notes |
+| Reporting | Status, readiness score, check details, ETL notes, batch handoff summaries |
 
 ## Fit With The Larger Geospatial Stack
 
@@ -118,5 +119,4 @@ That makes it useful as a standalone portfolio project and as a future validatio
 
 ## Roadmap
 
-- Add batch summary reports for data handoffs.
 - Add GitHub Actions validation for all sample datasets.

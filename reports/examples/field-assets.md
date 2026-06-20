@@ -4,6 +4,7 @@
 - Readiness Score: **100/100**
 - Driver: GeoJSON
 - Feature Count: 3
+- CRS: Not available
 - Bounds: (-96.4621, 32.9312, -96.4553, 32.9351)
 
 ## Geometry Types
@@ -24,6 +25,8 @@
 - **INFO** `schema.null_values`: No null or blank attribute values were found.
 - **INFO** `spatial.bbox`: Dataset bounds were calculated.
   - Details: `{"bbox": [-96.4621, 32.9312, -96.4553, 32.9351]}`
+- **INFO** `config.rules_applied`: Configured required-field and domain checks were applied.
+  - Details: `{"rules": ["required:asset_id", "required:asset_type", "required:status", "domain:asset_type", "domain:status"]}`
 - **INFO** `geometry.basic_validity`: All geometries passed starter coordinate validation.
 
 ## ETL Notes

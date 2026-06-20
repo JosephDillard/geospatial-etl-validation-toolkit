@@ -4,6 +4,7 @@
 - Readiness Score: **100/100**
 - Driver: CSV
 - Feature Count: 3
+- CRS: Not available
 - Bounds: (-96.4612, 32.9329, -96.4526, 32.9361)
 
 ## Geometry Types
@@ -26,6 +27,8 @@
 - **INFO** `schema.null_values`: No null or blank attribute values were found.
 - **INFO** `spatial.bbox`: Dataset bounds were calculated.
   - Details: `{"bbox": [-96.4612, 32.9329, -96.4526, 32.9361]}`
+- **INFO** `config.rules_applied`: Configured required-field and domain checks were applied.
+  - Details: `{"rules": ["required:asset_id", "required:asset_type", "required:status", "domain:asset_type", "domain:status"]}`
 - **INFO** `csv.coordinates.detected`: Latitude and longitude columns were detected.
   - Details: `{"latitude": "latitude", "longitude": "longitude"}`
 

@@ -1,0 +1,32 @@
+{
+  "dataset_count": 2,
+  "status_counts": {
+    "pass": 2,
+    "warn": 0,
+    "fail": 0
+  },
+  "total_features": 6,
+  "average_readiness_score": 100.0,
+  "datasets": [
+    {
+      "dataset_name": "field_assets",
+      "path": "samples\\valid\\field_assets.geojson",
+      "driver": "GeoJSON",
+      "status": "pass",
+      "readiness_score": 100,
+      "feature_count": 3,
+      "error_count": 0,
+      "warning_count": 0
+    },
+    {
+      "dataset_name": "service_locations",
+      "path": "samples\\valid\\service_locations.csv",
+      "driver": "CSV",
+      "status": "pass",
+      "readiness_score": 100,
+      "feature_count": 3,
+      "error_count": 0,
+      "warning_count": 0
+    }
+  ]
+}

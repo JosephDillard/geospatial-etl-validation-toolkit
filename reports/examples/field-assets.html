@@ -22,6 +22,7 @@
         <p><strong>Readiness Score:</strong> 100/100</p>
         <p><strong>Driver:</strong> GeoJSON</p>
         <p><strong>Feature Count:</strong> 3</p>
+        <p><strong>CRS:</strong> Not available</p>
         <p><strong>Bounds:</strong> (-96.4621, 32.9312, -96.4553, 32.9351)</p>
       </section>
       <h2>Geometry Types</h2>
@@ -31,12 +32,18 @@
 <li><code>asset_type</code> - null/blank values: 0</li>
 <li><code>owner</code> - null/blank values: 0</li>
 <li><code>status</code> - null/blank values: 0</li></ul>
+      <h2>Metadata</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Value</th></tr></thead>
+        <tbody><tr><td colspan="2">None available</td></tr></tbody>
+      </table>
       <h2>Checks</h2>
       <table>
         <thead><tr><th>Severity</th><th>Check</th><th>Message</th></tr></thead>
         <tbody><tr><td>INFO</td><td>schema.fields_present</td><td>Attribute fields were detected.</td></tr>
 <tr><td>INFO</td><td>schema.null_values</td><td>No null or blank attribute values were found.</td></tr>
 <tr><td>INFO</td><td>spatial.bbox</td><td>Dataset bounds were calculated.</td></tr>
+<tr><td>INFO</td><td>config.rules_applied</td><td>Configured required-field and domain checks were applied.</td></tr>
 <tr><td>INFO</td><td>geometry.basic_validity</td><td>All geometries passed starter coordinate validation.</td></tr></tbody>
       </table>
     </main>
