@@ -1,3 +1,5 @@
+[Portfolio Home: Joseph C. Dillard Geospatial Project Stack](https://josephdillard.github.io/JosephDillard/)
+
 # Geospatial ETL Validation Toolkit
 
 A portfolio-ready geospatial data readiness tool for validating incoming datasets before they are loaded into PostGIS, published as map services, or handed to downstream application teams.
